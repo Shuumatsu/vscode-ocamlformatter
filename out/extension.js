@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = __importStar(require("vscode"));
 const child_process_1 = require("child_process");
 const command_exists_1 = __importDefault(require("command-exists"));
+const path_1 = __importDefault(require("path"));
 exports.command = 'ocamlformat';
 const getFullRange = (document) => {
     const firstLine = document.lineAt(0);
@@ -22,7 +23,7 @@ const getFullRange = (document) => {
 const format = (filename, text) => {
     console.log(filename, text);
     const config = vscode.workspace.getConfiguration('ocamlformat');
-    const args = ['-', `--name=${filename}`];
+    const args = ['-', `--name=${path_1.default.basename(filename)}`];
     return child_process_1.spawnSync(exports.command, args, { input: text, encoding: 'utf8' });
 };
 function activate(context) {

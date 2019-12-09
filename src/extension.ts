@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 import { spawnSync } from 'child_process'
 import commandExists from 'command-exists'
+import path from 'path'
 
 export const command = 'ocamlformat'
 
@@ -13,7 +14,7 @@ const getFullRange = (document: vscode.TextDocument) => {
 const format = (filename: string, text: string) => {
     console.log(filename, text)
     const config = vscode.workspace.getConfiguration('ocamlformat')
-    const args = ['-', `--name=${filename}`]
+    const args = ['-', `--name=${path.basename(filename)}`]
     return spawnSync(command, args, { input: text, encoding: 'utf8' })
 }
 
@@ -59,4 +60,4 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.languages.registerDocumentFormattingEditProvider({ pattern: '**/*.mli' }, formatter))
 }
 
-export function deactivate() {}
+export function deactivate() { }
