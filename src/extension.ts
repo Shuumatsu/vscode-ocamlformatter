@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { spawnSync } from 'child_process'
+import commandExists from 'command-exists'
 
 export const command = 'ocamlformat'
 
@@ -10,6 +11,7 @@ const getFullRange = (document: vscode.TextDocument) => {
 }
 
 const format = (filename: string, text: string) => {
+    console.log(filename, text)
     const config = vscode.workspace.getConfiguration('ocamlformat')
     const args = ['-', `--name=${filename}`]
     return spawnSync(command, args, { input: text, encoding: 'utf8' })
@@ -21,40 +23,40 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.ocamlformat', () => {
             const { activeTextEditor } = vscode.window
-
-            if (!activeTextEditor) return
+            if (!activeTextEditor || !commandExists.sync(command)) return
 
             const { document } = activeTextEditor
             const text = document.getText()
             const { stderr, stdout } = format(document.fileName, text)
             if (stderr) return console.error('err', stderr)
+            console.log(text, stdout)
 
             const edit = new vscode.WorkspaceEdit()
             const range = getFullRange(document)
             edit.replace(document.uri, range, stdout)
-            console.log(text, stdout)
             return vscode.workspace.applyEdit(edit)
         })
     )
 
-    const formatter = vscode.languages.registerDocumentFormattingEditProvider(
-        { pattern: '**/*.ml[i]' },
-        {
-            provideDocumentFormattingEdits: (
-                document: vscode.TextDocument,
-                options: vscode.FormattingOptions
-            ): vscode.ProviderResult<vscode.TextEdit[]> =>
-                new Promise((resolve, reject) => {
-                    const text = document.getText()
-                    const { stderr, stdout } = format(document.fileName, text)
-                    if (stderr) return reject(stderr)
+    const formatter = {
+        provideDocumentFormattingEdits: (
+            document: vscode.TextDocument,
+            options: vscode.FormattingOptions
+        ): vscode.ProviderResult<vscode.TextEdit[]> =>
+            new Promise((resolve, reject) => {
+                const text = document.getText()
+                console.log(commandExists.sync(command))
+                if (!commandExists.sync(command)) return reject(new Error('command not in path'))
+                const { stderr, stdout } = format(document.fileName, text)
+                if (stderr) return reject(stderr)
 
-                    const range = getFullRange(document)
-                    return resolve([vscode.TextEdit.replace(range, stdout)])
-                })
-        }
-    )
-    context.subscriptions.push(formatter)
+                const range = getFullRange(document)
+                return resolve([vscode.TextEdit.replace(range, stdout)])
+            })
+    }
+
+    context.subscriptions.push(vscode.languages.registerDocumentFormattingEditProvider({ pattern: '**/*.ml' }, formatter))
+    context.subscriptions.push(vscode.languages.registerDocumentFormattingEditProvider({ pattern: '**/*.mli' }, formatter))
 }
 
 export function deactivate() {}
