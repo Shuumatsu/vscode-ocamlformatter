@@ -24,7 +24,7 @@ const format = (filename, text) => {
     console.log(filename, text);
     const config = vscode.workspace.getConfiguration('ocamlformat');
     const args = ['-', `--name=${path_1.default.basename(filename)}`];
-    return child_process_1.spawnSync(exports.command, args, { input: text, encoding: 'utf8' });
+    return child_process_1.spawnSync(exports.command, args, { input: text, encoding: 'utf8', cwd: path_1.default.dirname(filename) });
 };
 function activate(context) {
     console.log('Congratulations, your extension "ocamlformat" is now active!');

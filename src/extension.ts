@@ -15,7 +15,7 @@ const format = (filename: string, text: string) => {
     console.log(filename, text)
     const config = vscode.workspace.getConfiguration('ocamlformat')
     const args = ['-', `--name=${path.basename(filename)}`]
-    return spawnSync(command, args, { input: text, encoding: 'utf8' })
+    return spawnSync(command, args, { input: text, encoding: 'utf8', cwd: path.dirname(filename) })
 }
 
 export function activate(context: vscode.ExtensionContext) {
