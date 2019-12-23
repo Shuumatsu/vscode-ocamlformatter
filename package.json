@@ -4,7 +4,7 @@
     "description": "`ocamlformat` binding on vscode",
     "publisher": "Shuumatsu",
     "repository": "https://github.com/Shuumatsu/vscode-ocamlformat",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "engines": {
         "vscode": "^1.40.0"
     },
